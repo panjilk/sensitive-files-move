@@ -4,9 +4,10 @@ from idlelib import tree
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog, ttk
+import subprocess
 import shutil
 import pandas as pd
-
+import datetime
 # 变量定义区域
 
 MAC_num = 1
@@ -77,7 +78,7 @@ use_data = []  # excel数据根据mac筛选后的结果
 
 
 def init():
-    with open("/config.txt", "r") as f:
+    with open("log.txt", "r") as f:
         data = f.read()
         print(data)
 
@@ -142,7 +143,11 @@ def select():
 
 
 def copy():
+    global new_path1
     print("-----------------------------------------")
+
+    txt = str(datetime.datetime.now())
+    txt += "\n"
     for i in range(len(data)):
         path = str(data[i][PATH_num])  # 文件路径
         res = str(data[i][NAME_num])  # 文件名称
@@ -150,7 +155,7 @@ def copy():
         # folder path是准备存放的文件夹路径
         name = str(data[i][MAC_num])
         name = name.replace(":", "")
-        name = data[i][USERNAME_num] + name  #name : 用户名称+mac地址
+        name = data[i][USERNAME_num] + name  # name : 用户名称+mac地址
 
         new_path1 = os.path.join(folder_path2, str(name))  # 新文件夹路径
         new_path1 = os.path.normpath(new_path1)
@@ -168,31 +173,48 @@ def copy():
             print("文件: " + file + "不存在！")
             messagebox.showwarning("警告", "文件: " + file + "不存在！")
             print("-----------------------------------------")
+            txt += "文件: " + file + "不存在！"+ "\n"
+            txt += "-----------------------------------------"+ "\n"
             continue
         if os.path.exists(new_path):
             print("文件: " + new_path + "已存在！")
             print("-----------------------------------------")
+            txt += "文件: " + new_path + "已存在！"+ "\n"
+            txt += "-----------------------------------------"+ "\n"
             continue
         if not os.path.exists(new_path1):
             os.makedirs(new_path1)
             print("检查到没有目标文件夹，已为您重新创建")
+            txt += "检查到没有目标文件夹，已为您重新创建" + "\n"
         try:
 
-            shutil.copy(file, new_path)
+            #shutil.copy(file, new_path)
             print("文件: " + res + "已移动到" + new_path)
         except Exception as e:
             messagebox.showerror("出现错误", e)
+            txt += "出现错误"+ "\n"
             print(e)
         print("-----------------------------------------")
-        os.remove(file)
+        # os.remove(file)
+        txt += "文件:"+file+" 已为您移动到:" + new_path1 + "  路径下" + "\n"
+        txt += "-----------------------------------------"+ "\n"
+        print("开始输出txt:")
+        print(txt)
+        with open("log.txt", 'a', encoding='utf-8') as f:
+            print("开始编辑log----")
+            f.write(txt)
     messagebox.showinfo("提示", "文件已为您移动到:" + new_path1 + "  路径下")
+
+
+def open_log():
+    subprocess.Popen('log.txt')
 
 
 Bu1 = Button(root, text="导入文件", cursor="hand2", command=load)
 Bu2 = Button(root, text="开始移动", cursor="hand2", command=copy)
 Bu3 = Button(root, text="选择存放文件路径", cursor="hand2", command=select)
 Bu4 = Button(root, text="回退上一次移动", cursor="hand2")
-Bu5 = Button(root, text="打开日志", cursor="hand2")
+Bu5 = Button(root, text="打开日志", cursor="hand2", command=open_log)
 tree.place(y=200, x=0, width=1000, height=500)
 Bu1.place(x=100, y=100)
 Bu2.place(x=500, y=100)
