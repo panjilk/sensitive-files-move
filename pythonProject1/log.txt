@@ -1,33 +1,18 @@
-2024-07-22 16:59:27.677272
-文件: C:\Users\Yjx 168\Desktop\网点环境监控短信接收人员名单.xlsx不存在！
+2024-07-23 11:02:18.752102
+文件:C:\Users\panjilk\Desktop\测试//电信.xlsx 已为您移动到:C:/Users/panjilk/Desktop/测试/苏毅凯8208238D36DB  路径下
 -----------------------------------------
+2024-07-23 11:04:29.710804
+文件:C:\Users\panjilk\Desktop\测试//电信.xlsx 已为您移动到:C:/Users/panjilk/Desktop/测试/苏毅凯8208238D36DB  路径下
+-----------------------------------------
+2024-07-24 13:58:13.406619
 文件: F:\yjx\私人文档\YYZYGuanFangPC_20240410.zip不存在！
 -----------------------------------------
 文件: E:\Program Files\SafeLink\bin\libs\app.pdb不存在！
 -----------------------------------------
 文件: G:\maven\apache-maven-3.6.1-bin.zip不存在！
 -----------------------------------------
-文件:C:\Users\panjilk\Desktop\测试//电信.xlsx 已为您移动到:C:/Users/panjilk/Desktop/测试/王即位E0BE0347711D  路径下
+文件:C:\Users\panjilk\Desktop\测试//电信.xlsx 已为您移动到:C:/Users/panjilk/Desktop/测试/苏毅凯8208238D36DB  路径下
 -----------------------------------------
-2024-07-22 16:59:59.265449
-文件: C:\Users\Yjx 168\Desktop\网点环境监控短信接收人员名单.xlsx不存在！
------------------------------------------
-文件: F:\yjx\私人文档\YYZYGuanFangPC_20240410.zip不存在！
------------------------------------------
-文件: E:\Program Files\SafeLink\bin\libs\app.pdb不存在！
------------------------------------------
-文件: G:\maven\apache-maven-3.6.1-bin.zip不存在！
------------------------------------------
-文件:C:\Users\panjilk\Desktop\测试//电信.xlsx 已为您移动到:C:/Users/panjilk/Desktop/测试/王即位E0BE0347711D  路径下
------------------------------------------
-2024-07-22 17:02:36.420950
-文件: C:\Users\Yjx 168\Desktop\网点环境监控短信接收人员名单.xlsx不存在！
------------------------------------------
-文件: F:\yjx\私人文档\YYZYGuanFangPC_20240410.zip不存在！
------------------------------------------
-文件: E:\Program Files\SafeLink\bin\libs\app.pdb不存在！
------------------------------------------
-文件: G:\maven\apache-maven-3.6.1-bin.zip不存在！
------------------------------------------
-文件:C:\Users\panjilk\Desktop\测试//电信.xlsx 已为您移动到:C:/Users/panjilk/Desktop/测试/王即位E0BE0347711D  路径下
+2024-07-24 14:01:32.549247
+文件:C:\Users\panjilk\Desktop\测试//电信.xlsx 已为您移动到:C:/Users/panjilk/Desktop/测试/苏毅凯8208238D36DB  路径下
 -----------------------------------------

@@ -1,19 +1,21 @@
 import os.path
+import threading
 import tkinter
 from idlelib import tree
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog, ttk
-import subprocess
 import shutil
 import pandas as pd
 import datetime
-# 变量定义区域
+import uuid
 
-MAC_num = 1
-NAME_num = 2
-PATH_num = 3
-USERNAME_num = 4
+# 变量定义区域
+MAC_num = 1  # MAC地址
+NAME_num = 2  # 文件名称
+PATH_num = 3  # 文件路径
+USERNAME_num = 4  # 用户全名
+TYPE_num = 5  # 文档类型
 
 # 主窗口
 root = Tk()
@@ -27,29 +29,6 @@ var.set("导入文件")
 var1 = tkinter.StringVar()
 var1.set("移动文件")
 
-# macVariable = tkinter.StringVar()
-# macVariable.set("mac列数")
-# 创建下拉菜单
-# mac = ttk.Combobox(root, textvariable=macVariable)
-
-# nameVariable = tkinter.StringVar()
-# nameVariable.set("文件名列数")
-# name = ttk.Combobox(root, textvariable=nameVariable)
-# 放置下拉菜单
-
-
-# fileVariable = tkinter.StringVar()
-# fileVariable.set("路径列数")
-# 创建下拉菜单
-# filecol = ttk.Combobox(root, textvariable=fileVariable)
-#
-# mac.pack()
-# name.pack()
-# filecol.pack()
-# mac.place(x=100, y=200)
-# name.place(x=300, y=10)
-# file.place(x=500, y=10)
-# 创建一个Frame来包含Treeview和滚动条
 frame = tkinter.Frame(root)
 frame.pack(fill="both", expand=True)
 
@@ -74,13 +53,12 @@ path = tkinter.Label(root, text="")
 folder_path2 = ""  # 存放文件路径所在文件夹
 data = []  # 存放excel数据，二维列表
 title = []  # excel字段名
-use_data = []  # excel数据根据mac筛选后的结果
-
-
-def init():
-    with open("log.txt", "r") as f:
-        data = f.read()
-        print(data)
+use_data = []  # excel数据  一边是源文件路径，另一边是移动后的路径
+MAC = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff) for elements in range(0, 2 * 6, 2)][::-1])
+MAC = MAC.upper()
+back_bool = False  # false说明不能回退，true说明可回退
+type_name = []  # 存放文件类型,没有重复
+selected_options = []  # 筛选过后的文件类型
 
 
 def load():
@@ -104,19 +82,7 @@ def load():
             title.append(col)
             # print(col)
         print(title)
-
-        # mac['values'] = title
-        # filecol['values'] = title
-        # name['values'] = title
-        # 插入数据到Treeview中
-        for index, row in df.iterrows():
-            tree.insert("", "end", values=list(row))
-            # print(index, " ", list(row))
-            data.append(list(row))  # 保存数据到data
-        global MAC_num, NAME_num, PATH_num, USERNAME_num, new_path1
-        # MAC_num = int(mac.get())
-        # PATH_num = int(filecol.get())
-        # NAME_num = int(name.get())
+        global MAC_num, NAME_num, PATH_num, USERNAME_num, new_path1, TYPE_num
         for i in range(len(title)):
             if title[i] == "MAC地址":
                 MAC_num = i
@@ -126,12 +92,20 @@ def load():
                 PATH_num = i
             elif title[i] == "用户全名":
                 USERNAME_num = i
+            elif title[i] == "文档类型":
+                TYPE_num = i
+        # 插入数据到Treeview中
+        for index, row in df.iterrows():
+            if row.iloc[MAC_num] != MAC:
+                continue
+            tree.insert("", "end", values=list(row))
+            # print(index, " ", list(row))
+            data.append(list(row))  # 保存数据到data
+            if row.iloc[TYPE_num] not in type_name:
+                type_name.append(row.iloc[TYPE_num])
         print("自动识别---")
-        print("mac:", MAC_num + 1, "path:", PATH_num + 1, "name:", NAME_num + 1)
-        # for i in range(len(data)):
-        # for j in range(len(data[i])):
-        #     print(data[i][j], end=" ")
-        # print(data[i])
+        print("mac:", MAC_num + 1, "path:", PATH_num + 1, "name:", NAME_num + 1, "文档类型列数: ", TYPE_num + 1)
+        print("文档类型:", type_name)
 
 
 def select():
@@ -143,84 +117,167 @@ def select():
 
 
 def copy():
-    global new_path1
-    print("-----------------------------------------")
+    f: bool = False
+    print("当前选择的文件类型:", selected_options)
+    res = messagebox.askyesno("警告", "是否确认将文件移动到新文件夹？")
+    if res:
+        global use_data, new_path1, back_bool
 
-    txt = str(datetime.datetime.now())
-    txt += "\n"
-    for i in range(len(data)):
-        path = str(data[i][PATH_num])  # 文件路径
-        res = str(data[i][NAME_num])  # 文件名称
-        file = os.path.join(path, res)  # 文件具体路径
-        # folder path是准备存放的文件夹路径
-        name = str(data[i][MAC_num])
-        name = name.replace(":", "")
-        name = data[i][USERNAME_num] + name  # name : 用户名称+mac地址
-
-        new_path1 = os.path.join(folder_path2, str(name))  # 新文件夹路径
-        new_path1 = os.path.normpath(new_path1)
-        new_path1 = new_path1.replace("\\", "/")
-        new_path1 = new_path1.replace("//", "/")
-
-        new_path = os.path.join(new_path1, res)  # 新文件路径
-        new_path = os.path.normpath(new_path)
-        new_path = new_path.replace("\\", "/")
-
-        # print("MAC：" + str(data[i][MAC_num]))
-        print(new_path1)
-        print("当前文件路径为：" + new_path, end="\n")
-        if not os.path.exists(file):
-            print("文件: " + file + "不存在！")
-            messagebox.showwarning("警告", "文件: " + file + "不存在！")
-            print("-----------------------------------------")
-            txt += "文件: " + file + "不存在！"+ "\n"
-            txt += "-----------------------------------------"+ "\n"
-            continue
-        if os.path.exists(new_path):
-            print("文件: " + new_path + "已存在！")
-            print("-----------------------------------------")
-            txt += "文件: " + new_path + "已存在！"+ "\n"
-            txt += "-----------------------------------------"+ "\n"
-            continue
-        if not os.path.exists(new_path1):
-            os.makedirs(new_path1)
-            print("检查到没有目标文件夹，已为您重新创建")
-            txt += "检查到没有目标文件夹，已为您重新创建" + "\n"
-        try:
-
-            #shutil.copy(file, new_path)
-            print("文件: " + res + "已移动到" + new_path)
-        except Exception as e:
-            messagebox.showerror("出现错误", e)
-            txt += "出现错误"+ "\n"
-            print(e)
         print("-----------------------------------------")
-        # os.remove(file)
-        txt += "文件:"+file+" 已为您移动到:" + new_path1 + "  路径下" + "\n"
-        txt += "-----------------------------------------"+ "\n"
-        print("开始输出txt:")
-        print(txt)
-        with open("log.txt", 'a', encoding='utf-8') as f:
-            print("开始编辑log----")
-            f.write(txt)
-    messagebox.showinfo("提示", "文件已为您移动到:" + new_path1 + "  路径下")
+        txt = str(datetime.datetime.now())
+        txt += "\n"
+        for i in range(len(data)):
+            path = str(data[i][PATH_num])  # 文件路径
+            res = str(data[i][NAME_num])  # 文件名称
+            file = os.path.join(path, res)  # 文件具体路径
+            # folder path是准备存放的文件夹路径
+            name = str(data[i][MAC_num])
+            name = name.replace(":", "")
+            name = data[i][USERNAME_num] + name  # name : 用户名称+mac地址
+
+            new_path1 = os.path.join(folder_path2, str(name))  # 新文件夹路径
+            new_path1 = os.path.normpath(new_path1)
+            new_path1 = new_path1.replace("\\", "/")
+            new_path1 = new_path1.replace("//", "/")
+
+            new_path = os.path.join(new_path1, res)  # 新文件路径
+            new_path = os.path.normpath(new_path)
+            new_path = new_path.replace("\\", "/")
+
+            # print("MAC：" + str(data[i][MAC_num]))
+            print(new_path1)
+            print("当前文件路径为：" + new_path, end="\n")
+            if data[i][TYPE_num] not in selected_options:
+                print("文件: " + file + "不属于您选择的文件类型")
+                print("-----------------------------------------")
+                continue
+            if not os.path.exists(file):
+                print("文件: " + file + "不存在！")
+                messagebox.showwarning("警告", "文件: " + file + "不存在！")
+                print("-----------------------------------------")
+                txt += "文件: " + file + "不存在！" + "\n"
+                txt += "-----------------------------------------" + "\n"
+                continue
+            if os.path.exists(new_path):
+                print("文件: " + new_path + "已存在！")
+                print("-----------------------------------------")
+                txt += "文件: " + new_path + "已存在！" + "\n"
+                txt += "-----------------------------------------" + "\n"
+                continue
+            if not os.path.exists(new_path1):
+                os.makedirs(new_path1)
+                print("检查到没有目标文件夹，已为您重新创建")
+                txt += "检查到没有目标文件夹，已为您重新创建" + "\n"
+
+            try:
+                if not f:
+                    use_data.clear()
+                    f = True
+                shutil.move(file, new_path)
+                print("文件: " + res + "已移动到" + new_path)
+                use_data.append([])
+                use_data[len(use_data) - 1].append(file)
+                use_data[len(use_data) - 1].append(new_path)
+            except Exception as e:
+                messagebox.showerror("出现错误", e)
+                txt += "出现错误" + "\n"
+                print(e)
+            print("-----------------------------------------")
+            txt += "文件:" + file + " 已为您移动到:" + new_path1 + "  路径下" + "\n"
+            txt += "-----------------------------------------" + "\n"
+            print("开始输出txt:")
+            print(txt)
+            with open("log.txt", 'a', encoding='utf-8') as f:
+                print("开始编辑log----")
+                f.write(txt)
+        messagebox.showinfo("提示", "文件已为您移动到:" + new_path1 + "  路径下")
+        back_bool = True
+    else:
+        print("选择了取消")
 
 
 def open_log():
-    subprocess.Popen('log.txt')
+    os.startfile("log.txt")
 
+
+def backevent():
+    global use_data, back_bool
+    res = messagebox.askyesno("警告", "是否确认回退上一次移动？")
+    if res:
+        print(use_data)
+        if not back_bool or use_data == []:
+            messagebox.showwarning("警告", "没有可回退的文件！")
+            return
+        else:  # back_bool = TRUE
+            back_bool = False
+            for i in range(len(use_data)):
+                origin_file = use_data[i][0]
+                remove_file = use_data[i][1]
+                shutil.move(remove_file, origin_file)
+            messagebox.showinfo("提示", "文件已为您回退上一次移动")
+            use_data.clear()
+    else:
+        print("选择了取消")
+
+
+# 清空日志
+def clear_log():
+    with open("log.txt", 'w', encoding='utf-8') as f:
+        f.write("")
+
+
+# 筛选框部分代码
+class FilterFrame:
+    def __init__(self, master, options):
+        self.master = master
+        self.options = options
+        self.check_vars = []  # 用来存储每个 Checkbutton 的 IntVar
+
+    def create_filter(self):
+        # 创建新窗口以显示筛选框
+        filter_window = Toplevel(self.master)
+        filter_window.title("筛选选项")
+        self.check_vars.clear()
+        # 创建 Checkbutton
+        for option in self.options:
+            var = IntVar()  # 创建 IntVar 变量
+            self.check_vars.append(var)  # 存储 IntVar
+            cb = Checkbutton(filter_window, text=option, variable=var)
+            cb.pack(anchor='w')  # 最左侧对齐
+
+        # 提交按钮
+        confirm_button = tkinter.Button(filter_window, text="确认选择", command=self.confirm_selection)
+        confirm_button.pack(pady=10)
+
+    def confirm_selection(self):
+        global selected_options
+        # selected_options = [self.options[i] for i, var in enumerate(self.check_vars) if var.get() == 1]
+        selected_options = []
+        # print(self.check_vars)
+        for i, var in enumerate(self.check_vars):
+            if var.get() == 1:
+                selected_options.append(self.options[i])
+        print("您选择了:", selected_options)
+        print("-------")
+
+
+filter_frame = FilterFrame(root, type_name)  # 创建 FilterFrame 对象
 
 Bu1 = Button(root, text="导入文件", cursor="hand2", command=load)
 Bu2 = Button(root, text="开始移动", cursor="hand2", command=copy)
 Bu3 = Button(root, text="选择存放文件路径", cursor="hand2", command=select)
-Bu4 = Button(root, text="回退上一次移动", cursor="hand2")
+Bu4 = Button(root, text="回退上一次移动", cursor="hand2", command=backevent)
 Bu5 = Button(root, text="打开日志", cursor="hand2", command=open_log)
+Bu6 = Button(root, text="清空日志", cursor="hand2", command=clear_log)
+Bu7 = Button(root, text="开始筛选", cursor="hand2", command=filter_frame.create_filter)
 tree.place(y=200, x=0, width=1000, height=500)
 Bu1.place(x=100, y=100)
-Bu2.place(x=500, y=100)
-Bu3.place(x=280, y=100)
+Bu2.place(x=520, y=100)
+Bu3.place(x=250, y=100)
 Bu4.place(x=700, y=100)
 Bu5.place(x=700, y=50)
+Bu6.place(x=800, y=50)
+Bu7.place(x=400, y=100)
 path.place(x=300, y=150)
 
 mainloop()
