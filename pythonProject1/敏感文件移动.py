@@ -209,7 +209,15 @@ def copy():
 
 
 def open_log():
-    os.startfile("log.txt")
+    if not os.path.exists("log.txt"):
+        # 创建并打开一个文件以进行写入
+        with open('log.txt', 'w') as file:
+            # 向文件写入内容
+            file.write(' ')
+            print("日志文件不存在，已为您创建")
+            os.startfile("log.txt")
+    else:
+        os.startfile("log.txt")
 
 
 def backevent():
@@ -277,6 +285,7 @@ class FilterFrame:
         if self.filter_window is not None:
             self.filter_window.destroy()
             self.filter_window = None  # 清空引用
+
 
 # 测试代码
 filter_frame = FilterFrame(root, type_name)  # 创建 FilterFrame 对象
