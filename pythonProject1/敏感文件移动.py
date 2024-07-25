@@ -159,10 +159,22 @@ def copy():
                 txt += "-----------------------------------------" + "\n"
                 continue
             if os.path.exists(new_path):
-                print("文件: " + new_path + "已存在！")
-                print("-----------------------------------------")
-                txt += "文件: " + new_path + "已存在！" + "\n"
+                filename = res.split(".")[0]
+                print("文件发生重名，文件名为：" + filename)
+                c = 1
+                new_path = new_path1 + "/" + filename + "(" + str(c) + ")." + res.split(".")[1]
+                while os.path.exists(new_path):
+                    c += 1
+                    new_path = new_path1 + "/" + filename + "(" + str(c) + ")." + res.split(".")[1]
+                shutil.move(file, new_path)
+                txt += "检查到目标文件夹已存在，已为您重新创建，路径为：" + new_path + "\n"
                 txt += "-----------------------------------------" + "\n"
+                print("检查到目标文件夹已存在，已为您重新创建，路径为：" + new_path)
+                print("-----------------------------------------")
+                # 加载撤回数据
+                use_data.append([])
+                use_data[len(use_data) - 1].append(file)
+                use_data[len(use_data) - 1].append(new_path)
                 continue
             if not os.path.exists(new_path1):
                 os.makedirs(new_path1)
@@ -187,10 +199,10 @@ def copy():
             txt += "-----------------------------------------" + "\n"
             print("开始输出txt:")
             print(txt)
-            with open("log.txt", 'a', encoding='utf-8') as f:
+            with open("log.txt", 'a', encoding='utf-8') as fi:
                 print("开始编辑log----")
-                f.write(txt)
-        messagebox.showinfo("提示", "文件已为您移动到:" + new_path1 + "  路径下")
+                fi.write(txt)
+        messagebox.showinfo("提示", "操作已经完成，请查看具体路径")
         back_bool = True
     else:
         print("选择了取消")
@@ -232,35 +244,41 @@ class FilterFrame:
         self.master = master
         self.options = options
         self.check_vars = []  # 用来存储每个 Checkbutton 的 IntVar
+        self.filter_window = None  # 用于存储弹窗的引用
 
     def create_filter(self):
         # 创建新窗口以显示筛选框
-        filter_window = Toplevel(self.master)
-        filter_window.title("筛选选项")
+        self.filter_window = Toplevel(self.master)
+        self.filter_window.title("筛选选项")
+        self.filter_window.geometry("300x300")
         self.check_vars.clear()
         # 创建 Checkbutton
         for option in self.options:
             var = IntVar()  # 创建 IntVar 变量
+            var.set(1)
             self.check_vars.append(var)  # 存储 IntVar
-            cb = Checkbutton(filter_window, text=option, variable=var)
+            cb = Checkbutton(self.filter_window, text=option, variable=var)
             cb.pack(anchor='w')  # 最左侧对齐
 
         # 提交按钮
-        confirm_button = tkinter.Button(filter_window, text="确认选择", command=self.confirm_selection)
+        confirm_button = tkinter.Button(self.filter_window, text="确认选择", command=self.confirm_selection)
         confirm_button.pack(pady=10)
 
     def confirm_selection(self):
         global selected_options
-        # selected_options = [self.options[i] for i, var in enumerate(self.check_vars) if var.get() == 1]
         selected_options = []
-        # print(self.check_vars)
         for i, var in enumerate(self.check_vars):
             if var.get() == 1:
                 selected_options.append(self.options[i])
         print("您选择了:", selected_options)
         print("-------")
 
+        # 销毁弹窗
+        if self.filter_window is not None:
+            self.filter_window.destroy()
+            self.filter_window = None  # 清空引用
 
+# 测试代码
 filter_frame = FilterFrame(root, type_name)  # 创建 FilterFrame 对象
 
 Bu1 = Button(root, text="导入文件", cursor="hand2", command=load)
